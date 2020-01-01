@@ -13,6 +13,7 @@ wmain(int argc, wchar_t **argv)
 int
 main(int argc, char **argv)
 {
+    printf("running the main main of Python ...\n");
     return Py_BytesMain(argc, argv);
 }
 #endif

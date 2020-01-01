@@ -236,9 +236,11 @@ PyRun_InteractiveOneObjectEx(FILE *fp, PyObject *filename,
         Py_XDECREF(oenc);
         return -1;
     }
+    printf("waiting for the input ...\n");
     mod = PyParser_ASTFromFileObject(fp, filename, enc,
                                      Py_single_input, ps1, ps2,
                                      flags, &errcode, arena);
+    printf("input received now executing ...\n");
     Py_XDECREF(v);
     Py_XDECREF(w);
     Py_XDECREF(oenc);
@@ -298,7 +300,6 @@ PyRun_InteractiveOneFlags(FILE *fp, const char *filename_str, PyCompilerFlags *f
 
 /* Check whether a file maybe a pyc file: Look at the extension,
    the file type, and, if we may close it, at the first few bytes. */
-
 static int
 maybe_pyc_file(FILE *fp, const char* filename, const char* ext, int closeit)
 {
@@ -1101,6 +1102,7 @@ flush_io(void)
 static PyObject *
 run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals)
 {
+    printf("evaluating code object ...\n");
     PyObject *v;
     /*
      * We explicitly re-initialize _Py_UnhandledKeyboardInterrupt every eval
@@ -1126,6 +1128,7 @@ run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals)
     if (!v && PyErr_Occurred() == PyExc_KeyboardInterrupt) {
         _Py_UnhandledKeyboardInterrupt = 1;
     }
+    printf("no KeyboardInterrupt raised hence returning the evaluated code ...\n");
     return v;
 }
 
