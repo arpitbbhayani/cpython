@@ -220,7 +220,7 @@ gen_send_ex(PyGenObject *gen, PyObject *arg, int exc, int closing)
     gen->gi_running = 1;
     gen->gi_exc_state.previous_item = tstate->exc_info;
     tstate->exc_info = &gen->gi_exc_state;
-    result = _PyEval_EvalFrame(tstate, f, exc);
+    result = _PyEval_EvalFrame(tstate, f, exc, 0);
     tstate->exc_info = gen->gi_exc_state.previous_item;
     gen->gi_exc_state.previous_item = NULL;
     gen->gi_running = 0;

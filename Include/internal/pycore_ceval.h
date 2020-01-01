@@ -38,9 +38,9 @@ PyAPI_FUNC(void) _PyEval_SetCoroutineOriginTrackingDepth(
 void _PyEval_Fini(void);
 
 static inline PyObject*
-_PyEval_EvalFrame(PyThreadState *tstate, struct _frame *f, int throwflag)
+_PyEval_EvalFrame(PyThreadState *tstate, struct _frame *f, int throwflag, int source)
 {
-    return tstate->interp->eval_frame(f, throwflag);
+    return tstate->interp->eval_frame(f, throwflag, source);
 }
 
 extern PyObject *_PyEval_EvalCode(
@@ -51,7 +51,7 @@ extern PyObject *_PyEval_EvalCode(
     Py_ssize_t kwcount, int kwstep,
     PyObject *const *defs, Py_ssize_t defcount,
     PyObject *kwdefs, PyObject *closure,
-    PyObject *name, PyObject *qualname);
+    PyObject *name, PyObject *qualname, int source);
 
 #ifdef __cplusplus
 }

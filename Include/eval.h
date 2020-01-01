@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-PyAPI_FUNC(PyObject *) PyEval_EvalCode(PyObject *, PyObject *, PyObject *);
+PyAPI_FUNC(PyObject *) PyEval_EvalCode(PyObject *, PyObject *, PyObject *, int source);
 
 PyAPI_FUNC(PyObject *) PyEval_EvalCodeEx(PyObject *co,
                                          PyObject *globals,
@@ -15,7 +15,7 @@ PyAPI_FUNC(PyObject *) PyEval_EvalCodeEx(PyObject *co,
                                          PyObject *const *args, int argc,
                                          PyObject *const *kwds, int kwdc,
                                          PyObject *const *defs, int defc,
-                                         PyObject *kwdefs, PyObject *closure);
+                                         PyObject *kwdefs, PyObject *closure, int source);
 
 #ifndef Py_LIMITED_API
 PyAPI_FUNC(PyObject *) _PyEval_EvalCodeWithName(
@@ -26,7 +26,7 @@ PyAPI_FUNC(PyObject *) _PyEval_EvalCodeWithName(
     Py_ssize_t kwcount, int kwstep,
     PyObject *const *defs, Py_ssize_t defcount,
     PyObject *kwdefs, PyObject *closure,
-    PyObject *name, PyObject *qualname);
+    PyObject *name, PyObject *qualname, int source);
 
 PyAPI_FUNC(PyObject *) _PyEval_CallTracing(PyObject *func, PyObject *args);
 #endif

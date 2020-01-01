@@ -220,7 +220,7 @@ builtin___build_class__(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
     }
     cell = PyEval_EvalCodeEx(PyFunction_GET_CODE(func), PyFunction_GET_GLOBALS(func), ns,
                              NULL, 0, NULL, 0, NULL, 0, NULL,
-                             PyFunction_GET_CLOSURE(func));
+                             PyFunction_GET_CLOSURE(func), 0);
     if (cell != NULL) {
         if (bases != orig_bases) {
             if (PyMapping_SetItemString(ns, "__orig_bases__", orig_bases) < 0) {
@@ -941,7 +941,7 @@ builtin_eval_impl(PyObject *module, PyObject *source, PyObject *globals,
                 "code object passed to eval() may not contain free variables");
             return NULL;
         }
-        return PyEval_EvalCode(source, globals, locals);
+        return PyEval_EvalCode(source, globals, locals, 0);
     }
 
     PyCompilerFlags cf = _PyCompilerFlags_INIT;
@@ -1030,7 +1030,7 @@ builtin_exec_impl(PyObject *module, PyObject *source, PyObject *globals,
                 "contain free variables");
             return NULL;
         }
-        v = PyEval_EvalCode(source, globals, locals);
+        v = PyEval_EvalCode(source, globals, locals, 0);
     }
     else {
         PyObject *source_copy;

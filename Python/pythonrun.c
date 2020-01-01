@@ -62,12 +62,12 @@ extern Py_EXPORTED_SYMBOL grammar _PyParser_Grammar; /* From graminit.c */
 /* Forward */
 static void flush_io(void);
 static PyObject *run_mod(mod_ty, PyObject *, PyObject *, PyObject *,
-                          PyCompilerFlags *, PyArena *);
+                          PyCompilerFlags *, PyArena *, int);
 static PyObject *run_pyc_file(FILE *, const char *, PyObject *, PyObject *,
                               PyCompilerFlags *);
 static void err_input(perrdetail *);
 static void err_free(perrdetail *);
-static int PyRun_InteractiveOneObjectEx(FILE *, PyObject *, PyCompilerFlags *);
+static int PyRun_InteractiveOneObjectEx(FILE *, PyObject *, PyCompilerFlags *, int);
 
 /* Parse input from a file and execute it */
 int
@@ -118,7 +118,7 @@ PyRun_InteractiveLoopFlags(FILE *fp, const char *filename_str, PyCompilerFlags *
     }
     err = 0;
     do {
-        ret = PyRun_InteractiveOneObjectEx(fp, filename, flags);
+        ret = PyRun_InteractiveOneObjectEx(fp, filename, flags, 1);
         if (ret == -1 && PyErr_Occurred()) {
             /* Prevent an endless loop after multiple consecutive MemoryErrors
              * while still allowing an interactive command to fail with a
@@ -177,7 +177,8 @@ static int PARSER_FLAGS(PyCompilerFlags *flags)
  * error on failure. */
 static int
 PyRun_InteractiveOneObjectEx(FILE *fp, PyObject *filename,
-                             PyCompilerFlags *flags)
+                             PyCompilerFlags *flags,
+                             int source)
 {
     PyObject *m, *d, *v, *w, *oenc = NULL, *mod_name;
     mod_ty mod;
@@ -258,7 +259,7 @@ PyRun_InteractiveOneObjectEx(FILE *fp, PyObject *filename,
         return -1;
     }
     d = PyModule_GetDict(m);
-    v = run_mod(mod, filename, d, d, flags, arena);
+    v = run_mod(mod, filename, d, d, flags, arena, source);
     PyArena_Free(arena);
     if (v == NULL) {
         return -1;
@@ -273,7 +274,7 @@ PyRun_InteractiveOneObject(FILE *fp, PyObject *filename, PyCompilerFlags *flags)
 {
     int res;
 
-    res = PyRun_InteractiveOneObjectEx(fp, filename, flags);
+    res = PyRun_InteractiveOneObjectEx(fp, filename, flags, 0);
     if (res == -1) {
         PyErr_Print();
         flush_io();
@@ -1032,7 +1033,7 @@ PyRun_StringFlags(const char *str, int start, PyObject *globals,
 
     mod = PyParser_ASTFromStringObject(str, filename, start, flags, arena);
     if (mod != NULL)
-        ret = run_mod(mod, filename, globals, locals, flags, arena);
+        ret = run_mod(mod, filename, globals, locals, flags, arena, 0);
     PyArena_Free(arena);
     return ret;
 }
@@ -1061,7 +1062,7 @@ PyRun_FileExFlags(FILE *fp, const char *filename_str, int start, PyObject *globa
     if (mod == NULL) {
         goto exit;
     }
-    ret = run_mod(mod, filename, globals, locals, flags, arena);
+    ret = run_mod(mod, filename, globals, locals, flags, arena, 0);
 
 exit:
     Py_XDECREF(filename);
@@ -1100,7 +1101,7 @@ flush_io(void)
 }
 
 static PyObject *
-run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals)
+run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals, int source)
 {
     printf("evaluating code object ...\n");
     PyObject *v;
@@ -1124,7 +1125,7 @@ run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals)
         }
     }
 
-    v = PyEval_EvalCode((PyObject*)co, globals, locals);
+    v = PyEval_EvalCode((PyObject*)co, globals, locals, source);
     if (!v && PyErr_Occurred() == PyExc_KeyboardInterrupt) {
         _Py_UnhandledKeyboardInterrupt = 1;
     }
@@ -1134,7 +1135,7 @@ run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals)
 
 static PyObject *
 run_mod(mod_ty mod, PyObject *filename, PyObject *globals, PyObject *locals,
-            PyCompilerFlags *flags, PyArena *arena)
+            PyCompilerFlags *flags, PyArena *arena, int source)
 {
     PyCodeObject *co;
     PyObject *v;
@@ -1147,7 +1148,7 @@ run_mod(mod_ty mod, PyObject *filename, PyObject *globals, PyObject *locals,
         return NULL;
     }
 
-    v = run_eval_code_obj(co, globals, locals);
+    v = run_eval_code_obj(co, globals, locals, source);
     Py_DECREF(co);
     return v;
 }
@@ -1184,7 +1185,7 @@ run_pyc_file(FILE *fp, const char *filename, PyObject *globals,
     }
     fclose(fp);
     co = (PyCodeObject *)v;
-    v = run_eval_code_obj(co, globals, locals);
+    v = run_eval_code_obj(co, globals, locals, 0);
     if (v && flags)
         flags->cf_flags |= (co->co_flags & PyCF_MASK);
     Py_DECREF(co);

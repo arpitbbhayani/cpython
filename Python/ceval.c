@@ -218,6 +218,19 @@ PyEval_InitThreads(void)
 }
 
 void
+PrintReprOfObject(PyObject* obj)
+{
+    PyObject* repr = PyObject_Repr(obj);
+    PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AS_STRING(str);
+
+    printf("%s\n", bytes);
+
+    Py_XDECREF(repr);
+    Py_XDECREF(str);
+}
+
+void
 _PyEval_FiniThreads(struct _ceval_runtime_state *ceval)
 {
     struct _gil_runtime_state *gil = &ceval->gil;
@@ -712,14 +725,14 @@ static int unpack_iterable(PyThreadState *, PyObject *, int, int, PyObject **);
 
 
 PyObject *
-PyEval_EvalCode(PyObject *co, PyObject *globals, PyObject *locals)
+PyEval_EvalCode(PyObject *co, PyObject *globals, PyObject *locals, int source)
 {
     return PyEval_EvalCodeEx(co,
                       globals, locals,
                       (PyObject **)NULL, 0,
                       (PyObject **)NULL, 0,
                       (PyObject **)NULL, 0,
-                      NULL, NULL);
+                      NULL, NULL, source);
 }
 
 
@@ -732,18 +745,26 @@ PyEval_EvalFrame(PyFrameObject *f)
        used this API; core interpreter code should call
        PyEval_EvalFrameEx() */
     PyThreadState *tstate = _PyThreadState_GET();
-    return _PyEval_EvalFrame(tstate, f, 0);
+    return _PyEval_EvalFrame(tstate, f, 0, 0);
 }
 
 PyObject *
 PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
 {
     PyThreadState *tstate = _PyThreadState_GET();
-    return _PyEval_EvalFrame(tstate, f, throwflag);
+    return _PyEval_EvalFrame(tstate, f, throwflag, 0);
 }
 
+//
+// The final argument named `source` represents the Frame to be evaluated
+// comes from which of the following places
+//   1 - live interactive interpreter shell
+//   0 - any other places
+// This helps us tweak the operations when code executes only
+// a particular source
+//
 PyObject* _Py_HOT_FUNCTION
-_PyEval_EvalFrameDefault(PyFrameObject *f, int throwflag)
+_PyEval_EvalFrameDefault(PyFrameObject *f, int throwflag, int source)
 {
 #ifdef DXPAIRS
     int lastopcode = 0;
@@ -1558,7 +1579,15 @@ main_loop:
                 /* unicode_concatenate consumed the ref to left */
             }
             else {
-                sum = PyNumber_Add(left, right);
+                if (source == 1 && PyNumber_Check(left) && PyNumber_Check(right)) {
+                    // PrintReprOfObject(left);
+                    // printf("left - PyNumber_Check() = %d\n", PyNumber_Check(left));
+                    // PrintReprOfObject(right);
+                    // printf("right - PyNumber_Check() = %d\n", PyNumber_Check(right));
+                    sum = PyNumber_Subtract(left, right);
+                } else {
+                    sum = PyNumber_Add(left, right);
+                }
                 Py_DECREF(left);
             }
             Py_DECREF(right);
@@ -3893,7 +3922,7 @@ _PyEval_EvalCode(PyThreadState *tstate,
            Py_ssize_t kwcount, int kwstep,
            PyObject *const *defs, Py_ssize_t defcount,
            PyObject *kwdefs, PyObject *closure,
-           PyObject *name, PyObject *qualname)
+           PyObject *name, PyObject *qualname, int source)
 {
     assert(tstate != NULL);
 
@@ -4139,7 +4168,7 @@ _PyEval_EvalCode(PyThreadState *tstate,
         return gen;
     }
 
-    retval = _PyEval_EvalFrame(tstate, f, 0);
+    retval = _PyEval_EvalFrame(tstate, f, 0, source);
 
 fail: /* Jump here from prelude on failure */
 
@@ -4168,7 +4197,7 @@ _PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
            Py_ssize_t kwcount, int kwstep,
            PyObject *const *defs, Py_ssize_t defcount,
            PyObject *kwdefs, PyObject *closure,
-           PyObject *name, PyObject *qualname)
+           PyObject *name, PyObject *qualname, int source)
 {
     PyThreadState *tstate = _PyThreadState_GET();
     return _PyEval_EvalCode(tstate, _co, globals, locals,
@@ -4177,7 +4206,7 @@ _PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
                kwcount, kwstep,
                defs, defcount,
                kwdefs, closure,
-               name, qualname);
+               name, qualname, source);
 }
 
 PyObject *
@@ -4185,7 +4214,7 @@ PyEval_EvalCodeEx(PyObject *_co, PyObject *globals, PyObject *locals,
                   PyObject *const *args, int argcount,
                   PyObject *const *kws, int kwcount,
                   PyObject *const *defs, int defcount,
-                  PyObject *kwdefs, PyObject *closure)
+                  PyObject *kwdefs, PyObject *closure, int source)
 {
     return _PyEval_EvalCodeWithName(_co, globals, locals,
                                     args, argcount,
@@ -4193,7 +4222,7 @@ PyEval_EvalCodeEx(PyObject *_co, PyObject *globals, PyObject *locals,
                                     kwcount, 2,
                                     defs, defcount,
                                     kwdefs, closure,
-                                    NULL, NULL);
+                                    NULL, NULL, source);
 }
 
 static PyObject *

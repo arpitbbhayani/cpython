@@ -54,7 +54,7 @@ struct _ceval_runtime_state {
 
 /* interpreter state */
 
-typedef PyObject* (*_PyFrameEvalFunction)(struct _frame *, int);
+typedef PyObject* (*_PyFrameEvalFunction)(struct _frame *, int, int);
 
 #define _PY_NSMALLPOSINTS           257
 #define _PY_NSMALLNEGINTS           5

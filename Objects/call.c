@@ -324,7 +324,7 @@ function_code_fastcall(PyThreadState *tstate, PyCodeObject *co,
         Py_INCREF(*args);
         fastlocals[i] = *args++;
     }
-    PyObject *result = _PyEval_EvalFrame(tstate, f, 0);
+    PyObject *result = _PyEval_EvalFrame(tstate, f, 0, 0);
 
     if (Py_REFCNT(f) > 1) {
         Py_DECREF(f);
@@ -397,7 +397,7 @@ _PyFunction_Vectorcall(PyObject *func, PyObject* const* stack,
                 stack + nargs,
                 nkwargs, 1,
                 d, (int)nd, kwdefs,
-                closure, name, qualname);
+                closure, name, qualname, 0);
 }
 
 
