@@ -27,6 +27,8 @@
 #include "setobject.h"
 #include "structmember.h"
 
+#include "datetime.h"
+
 #include <ctype.h>
 
 #ifdef Py_DEBUG
@@ -227,6 +229,35 @@ ReprStr(PyObject* obj)
     Py_XDECREF(repr);
     Py_XDECREF(str);
     return bytes;
+}
+
+int
+get_random_number(int max) {
+    return time(NULL) % max;
+}
+
+char
+get_random_operator() {
+    char operators[] = {'+', '-', '*', '/', '^'};
+    return operators[get_random_number(5)];
+}
+
+PyObject *
+binary_operate(PyObject * left, PyObject * right, char operator) {
+    switch (operator) {
+        case '+':
+            return PyNumber_Add(left, right);
+        case '-':
+            return PyNumber_Subtract(left, right);
+        case '*':
+            return PyNumber_Multiply(left, right);
+        case '/':
+            return PyNumber_FloorDivide(left, right);
+        case '^':
+            return PyNumber_Power(left, right, Py_None);
+        default:
+            return NULL;
+    }
 }
 
 void
@@ -1579,14 +1610,14 @@ main_loop:
             }
             else {
                 // Do this operation only when both the operands are numbers and
-                // the evaluation was initiated from interactive interpreter.
-                // a.k.a. shell.
+                // the evaluation was initiated from interactive interpreter (shell)
                 if (source == 1 && PyNumber_Check(left) && PyNumber_Check(right)) {
-                    result = PyNumber_Subtract(left, right);
+                    char operator = get_random_operator();
+                    result = binary_operate(left, right, operator);
                     printf(
-                        "=====> %s + %s was evaluated as %s %c %s\n",
+                        "::::: %s + %s was evaluated as %s %c %s, hence to the value\n",
                         ReprStr(left), ReprStr(right),
-                        ReprStr(left), '-', ReprStr(right)
+                        ReprStr(left), operator, ReprStr(right)
                     );
                 } else {
                     result = PyNumber_Add(left, right);
