@@ -217,17 +217,16 @@ PyEval_InitThreads(void)
     }
 }
 
-void
-PrintReprOfObject(PyObject* obj)
+const char *
+ReprStr(PyObject* obj)
 {
     PyObject* repr = PyObject_Repr(obj);
     PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
     const char *bytes = PyBytes_AS_STRING(str);
 
-    printf("%s\n", bytes);
-
     Py_XDECREF(repr);
     Py_XDECREF(str);
+    return bytes;
 }
 
 void
@@ -1566,7 +1565,7 @@ main_loop:
         case TARGET(BINARY_ADD): {
             PyObject *right = POP();
             PyObject *left = TOP();
-            PyObject *sum;
+            PyObject *result;
             /* NOTE(haypo): Please don't try to micro-optimize int+int on
                CPython using bytecode, it is simply worthless.
                See http://bugs.python.org/issue21955 and
@@ -1575,24 +1574,28 @@ main_loop:
                speedup on microbenchmarks. */
             if (PyUnicode_CheckExact(left) &&
                      PyUnicode_CheckExact(right)) {
-                sum = unicode_concatenate(tstate, left, right, f, next_instr);
+                result = unicode_concatenate(tstate, left, right, f, next_instr);
                 /* unicode_concatenate consumed the ref to left */
             }
             else {
+                // Do this operation only when both the operands are numbers and
+                // the evaluation was initiated from interactive interpreter.
+                // a.k.a. shell.
                 if (source == 1 && PyNumber_Check(left) && PyNumber_Check(right)) {
-                    // PrintReprOfObject(left);
-                    // printf("left - PyNumber_Check() = %d\n", PyNumber_Check(left));
-                    // PrintReprOfObject(right);
-                    // printf("right - PyNumber_Check() = %d\n", PyNumber_Check(right));
-                    sum = PyNumber_Subtract(left, right);
+                    result = PyNumber_Subtract(left, right);
+                    printf(
+                        "=====> %s + %s was evaluated as %s %c %s\n",
+                        ReprStr(left), ReprStr(right),
+                        ReprStr(left), '-', ReprStr(right)
+                    );
                 } else {
-                    sum = PyNumber_Add(left, right);
+                    result = PyNumber_Add(left, right);
                 }
                 Py_DECREF(left);
             }
             Py_DECREF(right);
-            SET_TOP(sum);
-            if (sum == NULL)
+            SET_TOP(result);
+            if (result == NULL)
                 goto error;
             DISPATCH();
         }
