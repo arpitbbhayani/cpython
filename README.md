@@ -1,7 +1,7 @@
 Arpit's Python with randomizing addition operator
 
-This version of python has addition operator gone rogue.
-It performs subtraction, multiplication, division and power function
+This version of python has addition operator gone rogue. When asked to add
+two variable it performs one of subtraction, multiplication, division and power function
 at random. To know more details about what, why and how I recommend you
 checkout my blog post
 [arpitbhayani.me/blogs/i-changed-my-python](https://arpitbhayani.me/blogs/i-changed-my-python).
