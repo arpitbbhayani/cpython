@@ -192,7 +192,35 @@ pymain_header(const PyConfig *config)
         return;
     }
 
-    fprintf(stderr, "Python %s on %s\n", Py_GetVersion(), Py_GetPlatform());
+    fprintf(stderr, "                                                      \n");
+    fprintf(stderr, "                    @                                 \n");
+    fprintf(stderr, "                 .@@   #@@@@@/@%                      \n");
+    fprintf(stderr, "             , .@@@@@@@@@@@@@@@@@@@@@                 \n");
+    fprintf(stderr, "           @@ @@@@@@@@@@@@@@@@@@@@@@@@@               \n");
+    fprintf(stderr, "         @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@             \n");
+    fprintf(stderr, "        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&           \n");
+    fprintf(stderr, "       *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      \n");
+    fprintf(stderr, "       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          \n");
+    fprintf(stderr, "       @@@@@@@@@@@/     @@@@@@@@@@@@@@@@@@@@@         \n");
+    fprintf(stderr, "      &@@@@@@@@@             &@@@@@@@@@@@@@@@@        \n");
+    fprintf(stderr, "      @@@@@@@@                       @@@@@@@@@@       \n");
+    fprintf(stderr, "      /@@@@@@                          ,@@@@@  @@     \n");
+    fprintf(stderr, "       @@@@@*                           (@@@@         \n");
+    fprintf(stderr, "       @@@@@                             @@@@         \n");
+    fprintf(stderr, "        @@@@                             @@@@         \n");
+    fprintf(stderr, "         @@                              @@@          \n");
+    fprintf(stderr, "          @                              @            \n");
+    fprintf(stderr, "          @                              @            \n");
+    fprintf(stderr, "                                                      \n");
+
+    fprintf(stderr, "Arpit's Python %s on %s\n", Py_GetVersion(), Py_GetPlatform());
+    fprintf(stderr, "This version of Python is purely experimental\n");
+    fprintf(stderr, "and should not be used in production environment.\n");
+
+    fprintf(stderr, "Source of this Python can be found at 👇\n\n");
+    fprintf(stderr, "    https://github.com/arpitbbhayani/cpython\n\n");
+    fprintf(stderr, "⭐ the repository if you find it informative.\n\n");
+
     if (config->site_import) {
         fprintf(stderr, "%s\n", COPYRIGHT);
     }
