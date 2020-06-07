@@ -138,6 +138,15 @@ class BasicTest(BaseTest):
         self.assertEqual(context.prompt, '(My prompt) ')
         self.assertIn("prompt = 'My prompt'\n", data)
 
+        rmtree(self.env_dir)
+        builder = venv.EnvBuilder(prompt='.')
+        cwd = os.path.basename(os.getcwd())
+        self.run_with_capture(builder.create, self.env_dir)
+        context = builder.ensure_directories(self.env_dir)
+        data = self.get_text_file_contents('pyvenv.cfg')
+        self.assertEqual(context.prompt, '(%s) ' % cwd)
+        self.assertIn("prompt = '%s'\n" % cwd, data)
+
     def test_upgrade_dependencies(self):
         builder = venv.EnvBuilder()
         bin_path = 'Scripts' if sys.platform == 'win32' else 'bin'
@@ -382,6 +391,18 @@ class BasicTest(BaseTest):
         self.assertEqual(err, "".encode())
 
 
+    @unittest.skipUnless(sys.platform == 'darwin', 'only relevant on macOS')
+    def test_macos_env(self):
+        rmtree(self.env_dir)
+        builder = venv.EnvBuilder()
+        builder.create(self.env_dir)
+
+        envpy = os.path.join(os.path.realpath(self.env_dir),
+                             self.bindir, self.exe)
+        out, err = check_output([envpy, '-c',
+            'import os; print("__PYVENV_LAUNCHER__" in os.environ)'])
+        self.assertEqual(out.strip(), 'False'.encode())
+
 @requireVenvCreate
 class EnsurePipTest(BaseTest):
     """Test venv module installation of pip."""
@@ -509,7 +530,7 @@ class EnsurePipTest(BaseTest):
 
     # Issue #26610: pip/pep425tags.py requires ctypes
     @unittest.skipUnless(ctypes, 'pip requires ctypes')
-    @requires_zlib
+    @requires_zlib()
     def test_with_pip(self):
         self.do_test_with_pip(False)
         self.do_test_with_pip(True)

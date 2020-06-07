@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 from test import support
 from test.support.script_helper import (
@@ -218,6 +219,21 @@ class CmdLineTest(unittest.TestCase):
             b'\xed\xa0\x80' # lone surrogate character (invalid)
         )
         check_output(text)
+
+    def test_non_interactive_output_buffering(self):
+        code = textwrap.dedent("""
+            import sys
+            out = sys.stdout
+            print(out.isatty(), out.write_through, out.line_buffering)
+            err = sys.stderr
+            print(err.isatty(), err.write_through, err.line_buffering)
+        """)
+        args = [sys.executable, '-c', code]
+        proc = subprocess.run(args, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, text=True, check=True)
+        self.assertEqual(proc.stdout,
+                         'False False False\n'
+                         'False False True\n')
 
     def test_unbuffered_output(self):
         # Test expected operation of the '-u' switch
@@ -739,6 +755,17 @@ class CmdLineTest(unittest.TestCase):
                               executable=executable)
         self.assertEqual(proc.returncode, 0, proc)
         self.assertEqual(proc.stdout.strip(), b'0')
+
+    def test_parsing_error(self):
+        args = [sys.executable, '-I', '--unknown-option']
+        proc = subprocess.run(args,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              text=True)
+        err_msg = "unknown option --unknown-option\nusage: "
+        self.assertTrue(proc.stderr.startswith(err_msg), proc.stderr)
+        self.assertNotEqual(proc.returncode, 0)
+
 
 @unittest.skipIf(interpreter_requires_environment(),
                  'Cannot run -I tests when PYTHON env vars are required.')

@@ -43,9 +43,8 @@ are always available.  They are listed here in alphabetical order.
 .. function:: abs(x)
 
    Return the absolute value of a number.  The argument may be an
-   integer or a floating point number.  If the argument is a complex number, its
-   magnitude is returned. If *x* defines :meth:`__abs__`,
-   ``abs(x)`` returns ``x.__abs__()``.
+   integer, a floating point number, or an object implementing :meth:`__abs__`.
+   If the argument is a complex number, its magnitude is returned.
 
 
 .. function:: all(iterable)
@@ -892,6 +891,11 @@ are always available.  They are listed here in alphabetical order.
    sequence (such as a string, bytes, tuple, list, or range) or a collection
    (such as a dictionary, set, or frozen set).
 
+   .. impl-detail::
+
+      ``len`` raises :exc:`OverflowError` on lengths larger than
+      :data:`sys.maxsize`, such as :class:`range(2 ** 100) <range>`.
+
 
 .. _func-list:
 .. class:: list([iterable])
@@ -1085,6 +1089,12 @@ are always available.  They are listed here in alphabetical order.
    first decoded using a platform-dependent encoding or using the specified
    *encoding* if given.
 
+   There is an additional mode character permitted, ``'U'``, which no longer
+   has any effect, and is considered deprecated. It previously enabled
+   :term:`universal newlines` in text mode, which became the default behaviour
+   in Python 3.0. Refer to the documentation of the
+   :ref:`newline <open-newline-parameter>` parameter for further details.
+
    .. note::
 
       Python doesn't depend on the underlying operating system's notion of text
@@ -1241,6 +1251,10 @@ are always available.  They are listed here in alphabetical order.
 
          * The file is now non-inheritable.
 
+   .. deprecated-removed:: 3.4 3.10
+
+      The ``'U'`` mode.
+
    .. versionchanged::
       3.5
 
@@ -1255,10 +1269,6 @@ are always available.  They are listed here in alphabetical order.
          * Support added to accept objects implementing :class:`os.PathLike`.
          * On Windows, opening a console buffer may return a subclass of
            :class:`io.RawIOBase` other than :class:`io.FileIO`.
-
-   .. versionchanged:: 3.9
-      The ``'U'`` mode has been removed.
-
 
 .. function:: ord(c)
 
@@ -1300,7 +1310,7 @@ are always available.  They are listed here in alphabetical order.
       the second argument to be negative, permitting computation of modular
       inverses.
 
-   .. versionchanged:: 3.9
+   .. versionchanged:: 3.8
       Allow keyword arguments.  Formerly, only positional arguments were
       supported.
 
@@ -1824,6 +1834,9 @@ are always available.  They are listed here in alphabetical order.
       Negative values for *level* are no longer supported (which also changes
       the default value to 0).
 
+   .. versionchanged:: 3.9
+      When the command line options :option:`-E` or :option:`-I` are being used,
+      the environment variable :envvar:`PYTHONCASEOK` is now ignored.
 
 .. rubric:: Footnotes
 
