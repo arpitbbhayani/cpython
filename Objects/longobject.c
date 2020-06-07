@@ -6,6 +6,7 @@
 #include "pycore_interp.h"    // _PY_NSMALLPOSINTS
 #include "pycore_pystate.h"   // _Py_IsMainInterpreter()
 #include "longintrepr.h"
+#include "rangeobject.c"
 
 #include <float.h>
 #include <ctype.h>
@@ -5584,6 +5585,8 @@ Base 0 means to interpret the base from the string as an integer literal.\n\
 >>> int('0b100', base=0)\n\
 4");
 
+static PyObject *long_iter(PyObject *seq);
+
 static PyNumberMethods long_as_number = {
     (binaryfunc)long_add,       /*nb_add*/
     (binaryfunc)long_sub,       /*nb_subtract*/
@@ -5648,7 +5651,7 @@ PyTypeObject PyLong_Type = {
     0,                                          /* tp_clear */
     long_richcompare,                           /* tp_richcompare */
     0,                                          /* tp_weaklistoffset */
-    0,                                          /* tp_iter */
+    long_iter,                                  /* tp_iter */
     0,                                          /* tp_iternext */
     long_methods,                               /* tp_methods */
     0,                                          /* tp_members */
@@ -5684,6 +5687,25 @@ static PyStructSequence_Desc int_info_desc = {
     int_info_fields,  /* fields */
     2                 /* number of fields */
 };
+
+static PyObject *
+long_iter(PyObject *seq)
+{
+    longrangeiterobject *it;
+    it = PyObject_New(longrangeiterobject, &PyLongRangeIter_Type);
+    if (it == NULL)
+        return NULL;
+
+    it->start = _PyLong_Zero;
+    it->step = _PyLong_One;
+    it->len = seq;
+    it->index = _PyLong_Zero;
+    Py_INCREF(it->start);
+    Py_INCREF(it->step);
+    Py_INCREF(it->len);
+    Py_INCREF(it->index);
+    return (PyObject *)it;
+}
 
 PyObject *
 PyLong_GetInfo(void)
