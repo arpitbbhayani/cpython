@@ -6,7 +6,6 @@
 #include "pycore_interp.h"    // _PY_NSMALLPOSINTS
 #include "pycore_pystate.h"   // _Py_IsMainInterpreter()
 #include "longintrepr.h"
-#include "rangeobject.c"
 
 #include <float.h>
 #include <ctype.h>
@@ -5688,23 +5687,9 @@ static PyStructSequence_Desc int_info_desc = {
     2                 /* number of fields */
 };
 
-static PyObject *
-long_iter(PyObject *seq)
+static PyObject * long_iter(PyObject *seq)
 {
-    longrangeiterobject *it;
-    it = PyObject_New(longrangeiterobject, &PyLongRangeIter_Type);
-    if (it == NULL)
-        return NULL;
-
-    it->start = _PyLong_Zero;
-    it->step = _PyLong_One;
-    it->len = seq;
-    it->index = _PyLong_Zero;
-    Py_INCREF(it->start);
-    Py_INCREF(it->step);
-    Py_INCREF(it->len);
-    Py_INCREF(it->index);
-    return (PyObject *)it;
+    return long_0n_range_iter(seq);
 }
 
 PyObject *

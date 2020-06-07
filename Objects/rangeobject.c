@@ -4,6 +4,7 @@
 #include "pycore_abstract.h"   // _PyIndex_Check()
 #include "pycore_tupleobject.h"
 #include "structmember.h"         // PyMemberDef
+#include "rangeobject.h"
 
 /* Support objects whose length is > PY_SSIZE_T_MAX.
 
@@ -1107,6 +1108,29 @@ range_iter(PyObject *seq)
     it->start = r->start;
     it->step = r->step;
     it->len = r->length;
+    it->index = _PyLong_Zero;
+    Py_INCREF(it->start);
+    Py_INCREF(it->step);
+    Py_INCREF(it->len);
+    Py_INCREF(it->index);
+    return (PyObject *)it;
+}
+
+/*
+ *  long_0n_range_iter creates and returns a range iterator on long
+ *  iterating on values in range [0, n).
+ */
+PyObject *
+long_0n_range_iter(PyObject *seq)
+{
+    longrangeiterobject *it;
+    it = PyObject_New(longrangeiterobject, &PyLongRangeIter_Type);
+    if (it == NULL)
+        return NULL;
+
+    it->start = _PyLong_Zero;
+    it->step = _PyLong_One;
+    it->len = seq;
     it->index = _PyLong_Zero;
     Py_INCREF(it->start);
     Py_INCREF(it->step);
