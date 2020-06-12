@@ -1117,11 +1117,11 @@ range_iter(PyObject *seq)
 }
 
 /*
- *  long_0n_range_iter creates and returns a range iterator on long
+ *  PyLongRangeIter_ZeroToN creates and returns a range iterator on long
  *  iterating on values in range [0, n).
  */
 PyObject *
-long_0n_range_iter(PyObject *seq)
+PyLongRangeIter_ZeroToN(PyObject *seq)
 {
     longrangeiterobject *it;
     it = PyObject_New(longrangeiterobject, &PyLongRangeIter_Type);

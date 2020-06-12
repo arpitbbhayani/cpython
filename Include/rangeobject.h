@@ -18,7 +18,7 @@ they are represented by a start, stop, and step datamembers.
 PyAPI_DATA(PyTypeObject) PyRange_Type;
 PyAPI_DATA(PyTypeObject) PyRangeIter_Type;
 PyAPI_DATA(PyTypeObject) PyLongRangeIter_Type;
-PyAPI_FUNC(PyObject *) long_0n_range_iter(PyObject *);
+PyAPI_FUNC(PyObject *)   PyLongRangeIter_ZeroToN(PyObject *);
 
 #define PyRange_Check(op) Py_IS_TYPE(op, &PyRange_Type)
 

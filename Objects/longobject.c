@@ -5689,7 +5689,7 @@ static PyStructSequence_Desc int_info_desc = {
 
 static PyObject * long_iter(PyObject *seq)
 {
-    return long_0n_range_iter(seq);
+    return PyLongRangeIter_ZeroToN(seq);
 }
 
 PyObject *
