@@ -5687,9 +5687,17 @@ static PyStructSequence_Desc int_info_desc = {
     2                 /* number of fields */
 };
 
-static PyObject * long_iter(PyObject *seq)
+/*
+ *  long_iter creates an instance of range iterator using PyLongRangeIter_ZeroToN
+ *  and returns the iterator instance.
+ *
+ *  The argument to the `tp_iter` is the self object and since we are trying to
+ *  iterate an integer here, the input argument to `long_iter` will be the
+ *  PyObject of type PyLong_Type, holding the integer value.
+ */
+static PyObject * long_iter(PyObject *long_obj)
 {
-    return PyLongRangeIter_ZeroToN(seq);
+    return PyLongRangeIter_ZeroToN(long_obj);
 }
 
 PyObject *

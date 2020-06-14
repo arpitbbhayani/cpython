@@ -1119,23 +1119,41 @@ range_iter(PyObject *seq)
 /*
  *  PyLongRangeIter_ZeroToN creates and returns a range iterator on long
  *  iterating on values in range [0, n).
+ *
+ *  The function creates and returns a range iterator from 0 till the
+ *  provided long value.
  */
 PyObject *
-PyLongRangeIter_ZeroToN(PyObject *seq)
+PyLongRangeIter_ZeroToN(PyObject *long_obj)
 {
+		// creating a new instance of longrangeiterobject
     longrangeiterobject *it;
     it = PyObject_New(longrangeiterobject, &PyLongRangeIter_Type);
+
+		// if unable to allocate memoty to it, return NULL.
     if (it == NULL)
         return NULL;
 
+		// we set the start to 0
     it->start = _PyLong_Zero;
+
+    // we set the step to 1
     it->step = _PyLong_One;
-    it->len = seq;
+		
+		// we set the index to 0, since we want to always start from the first
+    // element of the iteration
     it->index = _PyLong_Zero;
+
+    // we set the total length of iteration to be equal to the provided value
+		it->len = long_obj;
+
+		// we increment the reference count for each of the values referenced
     Py_INCREF(it->start);
     Py_INCREF(it->step);
     Py_INCREF(it->len);
     Py_INCREF(it->index);
+
+    // downcast the iterator instance to PyObject and return
     return (PyObject *)it;
 }
 
